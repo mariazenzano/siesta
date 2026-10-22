@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import ControlButtons from "../components/ControlButtons";
 import DurationSlider from "../components/DurationSlider";
@@ -22,12 +22,23 @@ export default function Index() {
 
     return () => clearInterval(id);
   }, [isRunning]);
+
+  useEffect(() => {
+    if (secondsLeft > 0) return;
+    setIsRunning(false);
+  }, [secondsLeft]);
   function handleDurationChange(minutes: number) {
     setDurationMinutes(minutes);
     setSecondsLeft(minutes * SECONDS_PER_MINUTE);
     setIsRunning(false);
   }
   const progress = secondsLeft / (durationMinutes * SECONDS_PER_MINUTE);
+  const isDone = secondsLeft === 0;
+  function handleStart() {
+    if (secondsLeft === 0) setSecondsLeft(durationMinutes * SECONDS_PER_MINUTE);
+    setIsRunning(true);
+  }
+
   return (
     <SafeAreaView style={styles.screen}>
       <View style={styles.content}>
@@ -36,9 +47,15 @@ export default function Index() {
           progress={progress}
           timeText={formatTime(secondsLeft)}
         />{" "}
+        {isDone && (
+          <View style={styles.done}>
+            <View style={styles.doneDot} />
+            <Text style={styles.doneText}>¡Listo! Hora de volver</Text>
+          </View>
+        )}
         <ControlButtons
           isRunning={isRunning}
-          onStart={() => setIsRunning(true)}
+          onStart={handleStart}
           onPause={() => setIsRunning(false)}
         />
         <View style={styles.settings}>
@@ -61,4 +78,18 @@ const styles = StyleSheet.create({
     padding: 20,
     gap: 16,
   },
+
+  done: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 8,
+  },
+  doneDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: colors.warning,
+  },
+  doneText: { fontSize: 14, color: colors.textMuted },
 });
