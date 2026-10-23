@@ -3,9 +3,9 @@ import { StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import ControlButtons from "../components/ControlButtons";
 import DurationSlider from "../components/DurationSlider";
-import TimerRing from "../components/TimerRing"
 import Header from "../components/Header";
 import SettingSwitch from "../components/SettingSwich";
+import TimerRing from "../components/TimerRing";
 import { colors } from "../constants/colors";
 import { SECONDS_PER_MINUTE } from "../constants/timer";
 import { formatTime } from "../utils/formatTime";
@@ -13,6 +13,7 @@ export default function Index() {
   const [isRunning, setIsRunning] = useState(false);
   const [secondsLeft, setSecondsLeft] = useState(5 * SECONDS_PER_MINUTE);
   const [showSeconds, setShowSeconds] = useState(true);
+  const [repeat, setRepeat] = useState(false);
   const [durationMinutes, setDurationMinutes] = useState(5);
   useEffect(() => {
     if (!isRunning) return;
@@ -25,8 +26,13 @@ export default function Index() {
 
   useEffect(() => {
     if (secondsLeft > 0) return;
-    setIsRunning(false);
-  }, [secondsLeft]);
+    if (repeat) {
+      setSecondsLeft(durationMinutes * SECONDS_PER_MINUTE);
+    } else {
+      setIsRunning(false);
+    }
+  }, [secondsLeft, repeat, durationMinutes]);
+
   function handleDurationChange(minutes: number) {
     setDurationMinutes(minutes);
     setSecondsLeft(minutes * SECONDS_PER_MINUTE);
@@ -59,10 +65,16 @@ export default function Index() {
           onPause={() => setIsRunning(false)}
         />
         <View style={styles.settings}>
+          <SettingSwitch
+            label="Repetir al terminar"
+            value={repeat}
+            onChange={setRepeat}
+          />
           <DurationSlider
             minutes={durationMinutes}
             onChange={handleDurationChange}
           />
+
           <SettingSwitch
             label="Mostrar segundos"
             value={showSeconds}
